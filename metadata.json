@@ -1,0 +1,6 @@
+{
+  "name": "ToolzCraft",
+  "description": "A powerful multi-tool utilities platform featuring a secure client-side image compressor, markdown printable document builder, and unit conversion table calculator, aligning with GDPR, CCPA, and SOC2 safety protocols.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
