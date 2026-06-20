@@ -63,20 +63,27 @@ export default function AuthModal({ onClose, onLoginSuccess }: AuthModalProps) {
 
     if (isFirebaseConfigured() && firebaseActive) {
       try {
-        // Setup reCAPTCHA verifier if not already done
-        let verifier = (window as any).recaptchaVerifier;
-        if (!verifier) {
-          verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-            size: "invisible",
-            callback: () => {
-              // recaptcha solved automatically
-            },
-            "expired-callback": () => {
-              setOtpSentError("reCAPTCHA validation expired. Please retry code dispatch.");
-            }
-          });
-          (window as any).recaptchaVerifier = verifier;
+        // Safeguard: Freshly recreate the RecaptchaVerifier on every trigger
+        // to avoid binding with stale DOM components from previous modals/sessions.
+        try {
+          if ((window as any).recaptchaVerifier) {
+            (window as any).recaptchaVerifier.clear?.();
+          }
+        } catch (e) {
+          // ignore cleanup failures
         }
+        (window as any).recaptchaVerifier = null;
+
+        const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+          size: "invisible",
+          callback: () => {
+            // recaptcha solved automatically
+          },
+          "expired-callback": () => {
+            setOtpSentError("reCAPTCHA validation expired. Please retry code dispatch.");
+          }
+        });
+        (window as any).recaptchaVerifier = verifier;
 
         const result = await signInWithPhoneNumber(auth, trimmedPhone, verifier);
         setConfirmationResult(result);
@@ -566,8 +573,8 @@ export default function AuthModal({ onClose, onLoginSuccess }: AuthModalProps) {
           </form>
         )}
 
-        {/* reCAPTCHA mounting node for secure SMS verification */}
-        <div id="recaptcha-container" className="hidden"></div>
+        {/* reCAPTCHA mounting node for secure SMS verification - kept in layout tree so we avoid display: none rendering failures */}
+        <div id="recaptcha-container" className="opacity-0 absolute pointer-events-none h-0 w-0 overflow-hidden"></div>
 
       </div>
     </div>
