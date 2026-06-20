@@ -8,6 +8,25 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+/* Citrus Theme variables override with eye-safe text and background pairings */
+:root.theme-citrus {
+  --color-indigo-50: rgba(13, 94, 105, 0.05); /* Soft Dark Teal variant background */
+  --color-indigo-100: rgba(6, 95, 70, 0.08);   /* Soft Emerald-800 variant background */
+  --color-indigo-200: rgb(13, 94, 105);        /* Solid Dark Teal - perfect contrast, eye-friendly */
+  --color-indigo-300: rgb(5, 150, 105);        /* Solid Emerald 600 - comfortable tracking brightness */
+  --color-indigo-400: rgb(6, 95, 70);          /* Solid Emerald 800 - dark green comfort shade */
+  --color-indigo-505: rgb(13, 94, 105);        /* Dark Teal */
+  --color-indigo-650: rgb(6, 95, 70);          /* Emerald 800 */
+  
+  /* Additional mappings for Citrus */
+  --color-indigo-500: rgb(13, 94, 105);        /* Dark Teal solid text */
+  --color-indigo-600: rgb(5, 150, 105);        /* Emerald 600 solid text */
+  --color-indigo-700: rgb(6, 95, 70);          /* Emerald 800 comfort text */
+  --color-indigo-800: rgb(133, 77, 14);        /* Dark Yellow solid text */
+  --color-indigo-900: rgb(15, 23, 42);         /* Black base */
+  --color-indigo-950: rgb(255, 255, 255);       /* White base */
+}
+
 /* Custom scrollbar to keep layout highly polished in both light/dark phases */
 ::-webkit-scrollbar {
   width: 6px;
@@ -31,7 +50,4 @@ html, body {
   transition: background-color 0.2s ease, border-color 0.2s ease, text-color 0.2s ease;
 }
 
-/* Hide files upload handles visual blocks to allow full-width click overlay */
-input[type="file"]::file-selector-button {
-  display: none;
-}
+

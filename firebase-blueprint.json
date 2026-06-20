@@ -1,0 +1,138 @@
+{
+  "entities": {
+    "GlobalConfig": {
+      "title": "Global Config",
+      "description": "System-wide developer tool settings.",
+      "type": "object",
+      "properties": {
+        "hiddenToolIds": {
+          "type": "array",
+          "description": "List of deactivated tool IDs that should be hidden from lists and sidebars."
+        }
+      },
+      "required": ["hiddenToolIds"]
+    },
+    "Subscriber": {
+      "title": "Subscriber",
+      "description": "Active systems users and licensing exceptions.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the subscriber."
+        },
+        "tier": {
+          "type": "string",
+          "description": "License tier (e.g., Free Tier, Premium, Pro)."
+        },
+        "source": {
+          "type": "string",
+          "description": "Operational sign-up attribution source."
+        },
+        "joined": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Joined UTC timestamp."
+        },
+        "validityExpiry": {
+          "type": "string",
+          "description": "Expiration schedule or Lifetime flag."
+        },
+        "specialExceptions": {
+          "type": "array",
+          "description": "List of explicit tool IDs bypassed for this visitor account status."
+        }
+      },
+      "required": ["email", "tier", "source", "joined", "validityExpiry", "specialExceptions"]
+    },
+    "Plan": {
+      "title": "Subscription Plan",
+      "description": "Pricing options for standard and master developer access tiers.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Plan unique identifier."
+        },
+        "name": {
+          "type": "string",
+          "description": "Visible branding name of the plan."
+        },
+        "price": {
+          "type": "string",
+          "description": "Plan cost display metric."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Status toggle indicating is the tier offer current."
+        },
+        "limitations": {
+          "type": "string",
+          "description": "Short explanation of limits to display to standard users."
+        }
+      },
+      "required": ["id", "name", "price", "active", "limitations"]
+    },
+    "Feedback": {
+      "title": "Feedback Detail",
+      "description": "Customer comments and rating submissions.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Generated unique record ID."
+        },
+        "toolId": {
+          "type": "string",
+          "description": "Target tool parsed."
+        },
+        "toolName": {
+          "type": "string",
+          "description": "Name of the audited utility tool."
+        },
+        "rating": {
+          "type": "integer",
+          "description": "User evaluation quality score rating (1 to 5 stars)."
+        },
+        "comments": {
+          "type": "string",
+          "description": "Explanatory comments."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email descriptor of reviewer."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name designation of reviewer."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Transaction date."
+        }
+      },
+      "required": ["id", "toolId", "toolName", "rating", "comments", "email", "name", "timestamp"]
+    }
+  },
+  "firestore": {
+    "settings/{configId}": {
+      "schema": { "$ref": "#/entities/GlobalConfig" },
+      "description": "Location of system settings and tool visibility rules."
+    },
+    "subscribers/{subscriberId}": {
+      "schema": { "$ref": "#/entities/Subscriber" },
+      "description": "Location of system subscriber level overrides."
+    },
+    "plans/{planId}": {
+      "schema": { "$ref": "#/entities/Plan" },
+      "description": "Location of system pricing plans."
+    },
+    "feedback/{feedbackId}": {
+      "schema": { "$ref": "#/entities/Feedback" },
+      "description": "Location of customer reviews logs."
+    }
+  }
+}

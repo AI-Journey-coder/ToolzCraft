@@ -53,12 +53,35 @@ export default function SearchModal({ onClose, onSelectTool }: SearchModalProps)
   };
 
   useEffect(() => {
+    const getHiddenToolIds = (): string[] => {
+      try {
+        const saved = localStorage.getItem("admin_hidden_tools");
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const checkIsAdmin = (): boolean => {
+      try {
+        const saved = localStorage.getItem("toolzcraft_auth_user");
+        if (!saved) return false;
+        const usr = JSON.parse(saved);
+        return !!(usr && usr.email && usr.email.toLowerCase() === "new.ai.journey@gmail.com");
+      } catch {
+        return false;
+      }
+    };
+
+    const hiddenIds = getHiddenToolIds();
+    const activePool = ALL_TOOLS.filter(t => !hiddenIds.includes(t.id));
+
     if (!query) {
-      setResults(ALL_TOOLS.slice(0, 10)); // Default recommend top 10 tools
+      setResults(activePool.slice(0, 10)); // Default recommend top 10 tools
       return;
     }
 
-    const filtered = ALL_TOOLS.filter(
+    const filtered = activePool.filter(
       (tool) =>
         tool.name.toLowerCase().includes(query.toLowerCase()) ||
         tool.category.toLowerCase().includes(query.toLowerCase()) ||

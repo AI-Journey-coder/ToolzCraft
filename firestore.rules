@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for security validation
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.email != null && 
+             request.auth.token.email.lowerCase() == 'new.ai.journey@gmail.com';
+    }
+
+    function isOwner(email) {
+      return isAuthenticated() && 
+             request.auth.token.email != null && 
+             request.auth.token.email.lowerCase() == email.lowerCase();
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 64 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Settings Collection Rules
+    match /settings/{configId} {
+      allow read: if true; // Public must understand which tools are hidden on boot
+      allow write: if isAdmin() && isValidId(configId);
+    }
+
+    // Subscribers/Users Rules
+    match /subscribers/{subscriberId} {
+      allow read: if isAdmin() || (isAuthenticated() && (subscriberId.lowerCase() == request.auth.token.email.lowerCase() || resource.data.email.lowerCase() == request.auth.token.email.lowerCase()));
+      allow write: if isAdmin() && isValidId(subscriberId);
+    }
+
+    // Pricing Plans Rules
+    match /plans/{planId} {
+      allow read: if true; // Public can see the price offerings
+      allow write: if isAdmin() && isValidId(planId);
+    }
+
+    // Feedback Collection Rules
+    match /feedback/{feedbackId} {
+      allow count, list: if isAdmin();
+      allow get: if isAdmin() || (isAuthenticated() && resource.data.email.lowerCase() == request.auth.token.email.lowerCase());
+      allow create: if isValidId(feedbackId) && 
+                    request.resource.data.keys().hasAll(['id', 'toolId', 'toolName', 'rating', 'comments', 'timestamp']) &&
+                    request.resource.data.rating is int &&
+                    request.resource.data.rating >= 1 &&
+                    request.resource.data.rating <= 5 &&
+                    request.resource.data.comments is string &&
+                    request.resource.data.comments.size() <= 2000;
+      allow update, delete: if isAdmin() && isValidId(feedbackId);
+    }
+  }
+}

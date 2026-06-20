@@ -10,6 +10,8 @@ interface SidebarProps {
   onToggleSidebar: () => void;
   isCollapsedDesktop: boolean;
   onToggleDesktopCollapse: () => void;
+  hiddenToolIds?: string[];
+  isAdmin?: boolean;
 }
 
 // Helper to look up Lucide icons dynamically
@@ -28,6 +30,8 @@ export default function Sidebar({
   onToggleSidebar,
   isCollapsedDesktop,
   onToggleDesktopCollapse,
+  hiddenToolIds = [],
+  isAdmin = false,
 }: SidebarProps) {
   // Find the category containing the active tool
   const activeCategoryId = CATEGORIES.find((cat) =>
@@ -65,18 +69,33 @@ export default function Sidebar({
     }
   };
 
+  // Safe subset based on Admin controls (deactivated/hidden tools filtered out from standard layout)
+  const activeCategories = React.useMemo(() => {
+    return CATEGORIES.map((cat) => {
+      const visibleTools = cat.tools.filter(
+        (t) => !hiddenToolIds.includes(t.id)
+      );
+      return {
+        ...cat,
+        tools: visibleTools,
+      };
+    }).filter((cat) => cat.tools.length > 0);
+  }, [hiddenToolIds]);
+
   // Filter tools based on query
-  const filteredCategories = CATEGORIES.map((cat) => {
-    const matchedTools = cat.tools.filter(
-      (t) =>
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    return {
-      ...cat,
-      tools: matchedTools,
-    };
-  }).filter((cat) => cat.tools.length > 0);
+  const filteredCategories = React.useMemo(() => {
+    return activeCategories.map((cat) => {
+      const matchedTools = cat.tools.filter(
+        (t) =>
+          t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          t.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      return {
+        ...cat,
+        tools: matchedTools,
+      };
+    }).filter((cat) => cat.tools.length > 0);
+  }, [activeCategories, searchQuery]);
 
   return (
     <>
@@ -115,7 +134,7 @@ export default function Sidebar({
             </div>
             {!isCollapsedDesktop && (
               <span className="font-extrabold text-base text-gray-900 dark:text-white tracking-tight truncate leading-none">
-                ToolzCraft <span className="text-emerald-500 dark:text-emerald-400 text-[10px] block font-bold font-mono uppercase mt-0.5">Crafting Utilities</span>
+                ToolzCraft <span className="text-emerald-500 dark:text-emerald-600 text-[10px] block font-bold font-mono uppercase mt-0.5">Crafting Utilities</span>
               </span>
             )}
           </div>
@@ -177,12 +196,30 @@ export default function Sidebar({
                 onToggleSidebar();
               }
             }}
-            className="w-full flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-905 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs rounded-lg border border-emerald-500/20 transition cursor-pointer justify-center"
+            className="w-full flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-950 text-emerald-700 dark:text-emerald-600 font-extrabold text-xs rounded-lg border border-emerald-500/20 transition cursor-pointer justify-center"
             title="Launch the Expandable Sandbox Hub"
           >
             <Icons.LayoutDashboard className="w-4 h-4 shrink-0 text-emerald-600" />
             {!isCollapsedDesktop && <span>Explore Sandbox Hub</span>}
           </button>
+
+          {/* Conditional Admin Override Link */}
+          {isAdmin && (
+            <button
+              id="sidebar-admin-portal-link"
+              onClick={() => {
+                window.location.hash = "#/admin";
+                if (window.innerWidth < 1024) {
+                  onToggleSidebar();
+                }
+              }}
+              className="w-full flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950 text-red-700 dark:text-red-400 font-extrabold text-xs rounded-lg border border-red-500/25 transition cursor-pointer justify-center animate-pulse"
+              title="Sovereign Override panel"
+            >
+              <Icons.ShieldAlert className="w-4 h-4 shrink-0 text-red-650" />
+              {!isCollapsedDesktop && <span>Admin Override Area</span>}
+            </button>
+          )}
         </div>
 
         {/* Categories and Tools scroll panel */}
@@ -214,12 +251,12 @@ export default function Sidebar({
           {/* Collapsed desktop mini overview */}
           {isCollapsedDesktop && !searchQuery ? (
             <div className="flex flex-col items-center gap-4 py-4">
-              {CATEGORIES.map((cat) => (
+              {activeCategories.map((cat) => (
                 <button
                   id={`collapsed-cat-icon-${cat.id}`}
                   key={cat.id}
                   onClick={onToggleDesktopCollapse}
-                  className="p-2 bg-gray-50 dark:bg-gray-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg transition group relative"
+                  className="p-2 bg-gray-50 dark:bg-gray-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-600 rounded-lg transition group relative"
                   title={cat.title}
                 >
                   {getIconComponent(cat.icon)}
@@ -240,13 +277,13 @@ export default function Sidebar({
                     <button
                       id={`category-toggle-${category.id}`}
                       onClick={() => toggleCategory(category.id)}
-                      className="w-full flex items-center justify-between py-2 px-2 hover:bg-gray-50 dark:hover:bg-gray-850/70 rounded-lg font-medium text-sm text-gray-900 dark:text-gray-100 transition-all text-left"
+                      className="w-full flex items-center justify-between py-2 px-2 hover:bg-gray-50 dark:hover:bg-gray-850/70 rounded-lg font-semibold text-xs text-gray-900 dark:text-emerald-600 transition-all text-left"
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-emerald-605 dark:text-emerald-405 shrink-0">
+                        <span className="text-emerald-600 dark:text-emerald-600 shrink-0">
                           {getIconComponent(category.icon)}
                         </span>
-                        <span className="font-semibold tracking-tight leading-none">
+                        <span>
                           {category.title}
                         </span>
                       </div>
@@ -258,28 +295,33 @@ export default function Sidebar({
                         )}
                       </span>
                     </button>
-
+ 
                     {/* Tools sublist */}
                     {isExpanded && (
                       <div className="pl-3 pr-1 mt-1 space-y-0.5 border-l border-gray-150 dark:border-gray-800 ml-4.5 animate-fade-in">
                         {category.tools.map((tool) => {
                           const isActive = activeToolId === tool.id;
+                          const isToolHidden = hiddenToolIds.includes(tool.id);
                           return (
                             <button
                               id={`tool-nav-${tool.id}`}
                               key={tool.id}
                               onClick={() => handleSelectTool(tool.id)}
                               className={`
-                                w-full flex items-center justify-between py-1.5 px-2.5 rounded-md text-xs font-medium text-left transition
+                                w-full flex items-center justify-between py-1.5 px-2.5 rounded-md text-[11px] font-bold text-left transition
                                 ${
                                   isActive
-                                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-450 border-l-2 border-emerald-500"
-                                    : "hover:bg-gray-50 dark:hover:bg-gray-850 text-gray-600 dark:text-gray-450 hover:text-gray-900 dark:hover:text-white"
+                                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-600 border-l-2 border-emerald-500 font-extrabold"
+                                    : "hover:bg-gray-50 dark:hover:bg-gray-850 text-gray-650 dark:text-emerald-800 hover:text-emerald-600 dark:hover:text-emerald-300"
                                 }
+                                ${isToolHidden ? "opacity-50 text-rose-500/80 saturate-50 hover:text-rose-600" : ""}
                               `}
-                              title={tool.description}
+                              title={tool.description + (isToolHidden ? " (HIDDEN UTILITY)" : "")}
                             >
-                              <span className="truncate pr-1">{tool.name}</span>
+                              <span className="truncate pr-1 flex items-center gap-1">
+                                {tool.name}
+                                {isToolHidden && <span className="text-[9px] font-mono font-bold text-rose-500">(HIDDEN)</span>}
+                              </span>
                               {(tool.isAiPowered || tool.category === "database-schema" || tool.category === "receipt-ocr") ? (
                                 <span className="text-[8px] font-extrabold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-400 px-1 rounded font-mono shrink-0 ml-1 uppercase" title="Calls Backend API Service">
                                   API
@@ -305,10 +347,10 @@ export default function Sidebar({
 
         {/* Collapsed Desktop handle visual placeholder */}
         {!isCollapsedDesktop && (
-          <div className="p-3 border-t border-gray-200 dark:border-gray-850 shrink-0 bg-gray-50 dark:bg-gray-905">
+          <div className="p-3.5 border-t border-gray-200 dark:border-gray-850 shrink-0 bg-gray-50 dark:bg-gray-905 space-y-3 box-border">
             <div className="flex items-center gap-2">
-              <Icons.Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase">
+              <Icons.Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
+              <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 tracking-wider uppercase">
                 GDPR & SOC2 Verified SSL
               </span>
             </div>

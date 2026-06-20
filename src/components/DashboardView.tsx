@@ -65,11 +65,40 @@ export default function DashboardView({
     setExpandedCats(updated);
   };
 
-  const totalToolsCount = ALL_TOOLS.length;
+  // Local indicators to check dynamic admin visibility parameters
+  const getHiddenToolIds = (): string[] => {
+    try {
+      const saved = localStorage.getItem("admin_hidden_tools");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const checkIsAdmin = (): boolean => {
+    try {
+      const saved = localStorage.getItem("toolzcraft_auth_user");
+      if (!saved) return false;
+      const usr = JSON.parse(saved);
+      return !!(usr && usr.email && usr.email.toLowerCase() === "new.ai.journey@gmail.com");
+    } catch {
+      return false;
+    }
+  };
+
+  const hiddenIds = getHiddenToolIds();
+  const isAdmin = checkIsAdmin();
+
+  const displayedTools = ALL_TOOLS.filter(t => !hiddenIds.includes(t.id));
+  const totalToolsCount = displayedTools.length;
 
   // Filter categories based on search term or selected filter
   const filteredCategories = CATEGORIES.map((cat) => {
     const matchedTools = cat.tools.filter((t) => {
+      // Exclude hidden tools strictly
+      if (hiddenIds.includes(t.id)) {
+        return false;
+      }
       const matchesSearch = 
         t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
         t.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -100,7 +129,7 @@ export default function DashboardView({
   }, [searchTerm]);
 
   return (
-    <div id="hub-landing-workspace" className="max-w-7xl mx-auto px-4 py-6 md:py-10 flex-1 space-y-6 select-none animate-fade-in">
+    <div id="hub-landing-workspace" className="max-w-7xl mx-auto px-4 py-6 md:py-10 flex-1 space-y-6 animate-fade-in">
       
       {/* Search & Header Control Area */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 p-4.5 rounded-2xl shadow-3xs">
@@ -167,7 +196,7 @@ export default function DashboardView({
           {selectedCategory !== "all" && (
             <button
               onClick={() => onSelectCategory && onSelectCategory("all")}
-              className="text-[11px] px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40 border border-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-xl font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
+              className="text-[11px] px-3 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/40 border border-emerald-500/10 text-emerald-700 dark:text-emerald-600 rounded-xl font-bold transition cursor-pointer flex items-center gap-1 shrink-0"
             >
               <Icons.RotateCcw className="w-3.5 h-3.5" />
               Reset Hub
@@ -191,10 +220,10 @@ export default function DashboardView({
               {/* Category Header Bar (Interactive trigger) */}
               <div 
                 onClick={() => toggleCategory(cat.id)}
-                className="p-4 md:p-5 flex items-center justify-between cursor-pointer select-none bg-gray-50/50 hover:bg-gray-50 dark:bg-gray-900/60 dark:hover:bg-gray-900 transition-colors border-b border-gray-100 dark:border-gray-850/50"
+                className="p-4 md:p-5 flex items-center justify-between cursor-pointer bg-gray-50/50 hover:bg-gray-50 dark:bg-gray-900/60 dark:hover:bg-gray-900 transition-colors border-b border-gray-100 dark:border-gray-850/50"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-500/10 shrink-0">
+                  <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-600 rounded-xl border border-emerald-500/10 shrink-0">
                     <IconComponent className="w-5.5 h-5.5" />
                   </div>
                   <div>
@@ -224,38 +253,56 @@ export default function DashboardView({
               {isExpanded && (
                 <div className="p-4 md:p-6 bg-white dark:bg-gray-905/40 border-t border-gray-100 dark:border-gray-850/20 animate-fade-in">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {cat.tools.map((t) => (
-                      <div
-                        id={`hub-expanded-tool-tile-${t.id}`}
-                        key={t.id}
-                        onClick={() => onSelectTool(t.id)}
-                        className="group p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 hover:border-emerald-500/20 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/5 rounded-2xl transition duration-300 cursor-pointer flex flex-col justify-between h-36 relative shadow-3xs"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-extrabold text-sm text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition truncate">
-                              {t.name}
-                            </span>
-                            <ArrowUpRight className="w-4 h-4 text-gray-350 opacity-0 group-hover:opacity-100 group-hover:text-emerald-500 transition shrink-0" />
+                    {cat.tools.map((t) => {
+                      const isHidden = hiddenIds.includes(t.id);
+                      return (
+                        <div
+                          id={`hub-expanded-tool-tile-${t.id}`}
+                          key={t.id}
+                          onClick={() => onSelectTool(t.id)}
+                          className={`group p-5 rounded-2xl transition duration-300 cursor-pointer flex flex-col justify-between h-36 relative shadow-3xs ${
+                            isHidden
+                              ? "bg-rose-50/15 dark:bg-rose-950/10 border border-rose-350/30 hover:border-rose-500/50 opacity-70 grayscale hover:grayscale-0 hover:opacity-100"
+                              : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 hover:border-emerald-500/20 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/5"
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className={`font-extrabold text-sm transition truncate ${
+                                isHidden ? "text-rose-650 dark:text-rose-400" : "text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-600"
+                              }`}>
+                                {t.name}
+                              </span>
+                              {isHidden ? (
+                                <Icons.Lock className="w-3.5 h-3.5 text-rose-500" />
+                              ) : (
+                                <ArrowUpRight className="w-4 h-4 text-gray-350 opacity-0 group-hover:opacity-100 group-hover:text-emerald-500 transition shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400 dark:text-gray-550 mt-2 leading-relaxed line-clamp-2 font-medium">
+                              {t.description}
+                            </p>
                           </div>
-                          <p className="text-xs text-gray-400 dark:text-gray-505 mt-2 leading-relaxed line-clamp-2 font-medium">
-                            {t.description}
-                          </p>
-                        </div>
 
-                        <div className="flex items-center gap-1.5 pt-2 select-none">
-                          {(t.isAiPowered || t.category === "database-schema" || t.category === "receipt-ocr") ? (
-                            <span className="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider flex items-center gap-0.5">
-                              <Sparkles className="w-2.5 h-2.5" />
-                              Calls API
+                          <div className="flex items-center gap-1.5 pt-2">
+                            {isHidden && (
+                              <span className="text-[8px] font-black bg-rose-100 dark:bg-rose-955/65 text-rose-700 dark:text-rose-300 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">
+                                Hidden from Public
+                              </span>
+                            )}
+                            {(t.isAiPowered || t.category === "database-schema" || t.category === "receipt-ocr") ? (
+                              <span className="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider flex items-center gap-0.5">
+                                <Sparkles className="w-2.5 h-2.5" />
+                                Calls API
+                              </span>
+                            ) : null}
+                            <span className="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-600 px-1.5 py-0.5 rounded font-mono uppercase ml-auto">
+                              0% Retention
                             </span>
-                          ) : null}
-                          <span className="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 px-1.5 py-0.5 rounded font-mono uppercase ml-auto">
-                            0% Retention
-                          </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

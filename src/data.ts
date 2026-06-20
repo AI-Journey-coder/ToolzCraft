@@ -52,6 +52,7 @@ export const CATEGORIES: Category[] = [
     title: "Contact Management Suite",
     icon: "Users",
     tools: [
+      { id: "contact-shower", name: "Premium Contact Shower & Device Conversion Station", category: "contact-management", description: "Search, filter, inspect and dynamically convert directories between device frameworks (iOS, Android, CSV)." },
       { id: "contact-duplicate-finder", name: "Contact Duplicate Finder", category: "contact-management", description: "Analyze vCard/CSV contact rosters to find duplicates." },
       { id: "contact-merger", name: "Contact Merger", category: "contact-management", description: "Merge fields from identical files and standardize directories." },
       { id: "contact-cleaner", name: "Contact Cleaner", category: "contact-management", description: "Format contact numbers and clean invalid names." },
@@ -90,12 +91,13 @@ export const CATEGORIES: Category[] = [
       { id: "pdf-split", name: "PDF Split", category: "files-documents", description: "Extract individual sheets or sheet arrays from massive files." },
       { id: "pdf-compress", name: "PDF Compress", category: "files-documents", description: "Optimize file weights of documents for fast uploads." },
       { id: "pdf-to-word", name: "PDF to Word", category: "files-documents", description: "Extract printable text paragraphs into .docx file assets.", isAiPowered: true },
+      { id: "word-to-pdf", name: "Word to PDF", category: "files-documents", description: "Convert DOC/DOCX files into high-fidelity PDF documents.", isAiPowered: true },
       { id: "pdf-to-excel", name: "PDF to Excel", category: "files-documents", description: "Isolate structured tabular sheets into tables.", isAiPowered: true },
-      { id: "pdf-ocr", name: "OCR", category: "files-documents", description: "Read typed textures directly out of scanned assets.", isAiPowered: true },
       { id: "image-compress", name: "Image Compression", category: "files-documents", description: "Shrink file payloads of JPG/PNG assets with control sliders." },
       { id: "image-converter", name: "Image Converter", category: "files-documents", description: "Transpose formats between WebP, PNG, JPEG, HEIC, and PDF." },
       { id: "file-converter", name: "File Converter", category: "files-documents", description: "Convert configuration layouts (JSON, YAML, CSV) cleanly." },
-      { id: "qr-code-gen", name: "QR Code Generator", category: "files-documents", description: "Encode URLs or text blocks into downloadable vector QR codes." }
+      { id: "qr-code-gen", name: "QR Code Generator", category: "files-documents", description: "Encode URLs or text blocks into downloadable vector QR codes." },
+      { id: "barcode-gen", name: "Barcode Generator", category: "files-documents", description: "Encode product serials or custom strings into printable barcodes.", isAiPowered: true }
     ]
   },
   {
@@ -103,13 +105,11 @@ export const CATEGORIES: Category[] = [
     title: "Receipt & OCR Suite",
     icon: "Receipt",
     tools: [
-      { id: "receipt-ocr-scan", name: "Receipt OCR", category: "receipt-ocr", description: "Analyze checkout tickets to map merchant, dates, and full line-items.", isAiPowered: true },
-      { id: "invoice-ocr-scan", name: "Invoice OCR", category: "receipt-ocr", description: "Isolate metadata, totals, taxes, and vendor details from business invoices.", isAiPowered: true },
+      { id: "receipt-ocr-scan", name: "Receipt-Invoice OCR", category: "receipt-ocr", description: "Analyze receipts & invoices to map merchant, dates, line-items, and totals with high physical layout fidelity.", isAiPowered: true },
       { id: "bank-statement", name: "Bank Statement OCR", category: "receipt-ocr", description: "Extract transaction logs tables from scanned financial ledger PDF receipts.", isAiPowered: true },
       { id: "gst-invoice-extractor", name: "GST Invoice Extractor", category: "receipt-ocr", description: "Identify legal GST numbers, state codes, and rate allocations.", isAiPowered: true },
       { id: "expense-categorizer", name: "Expense Categorizer", category: "receipt-ocr", description: "Classify purchase orders and receipts into standard tax accounts.", isAiPowered: true },
-      { id: "receipt-excel", name: "Receipt to Excel", category: "receipt-ocr", description: "Serialize scanned checkout receipts directly into downloadable XLS spreadsheets.", isAiPowered: true },
-      { id: "invoice-excel", name: "Invoice to Excel", category: "receipt-ocr", description: "Transcribe business invoices into formatted financial rows.", isAiPowered: true },
+      { id: "receipt-excel", name: "Receipt/Invoice to Excel Converter", category: "receipt-ocr", description: "Serialize scanned checkout receipts or invoices directly into downloadable spreadsheet XLS files.", isAiPowered: true },
       { id: "ocr-table", name: "OCR Table Extractor", category: "receipt-ocr", description: "Identify bordered tables in scans and format them to Markdown grids.", isAiPowered: true }
     ]
   },
@@ -288,8 +288,65 @@ export const CATEGORIES: Category[] = [
       { id: "avro-jsonschema", name: "Avro → JSON Schema", category: "enterprise-modernization", description: "Format Apache Avro record definitions into AJV-compliant JSON schemas.", isAiPowered: true },
       { id: "protobuf-jsonschema", name: "Protobuf → JSON Schema", category: "enterprise-modernization", description: "Translate Proto3 contracts files definitions into web-consumable JSON schemas.", isAiPowered: true }
     ]
+  },
+  {
+    id: "code-converters",
+    title: "Code & Language Converter",
+    icon: "Code2",
+    tools: [
+      { id: "py-to-js", name: "Python → JavaScript", category: "code-converters", description: "Convert Python code structures into functional JavaScript modules.", isAiPowered: true },
+      { id: "js-to-py", name: "JavaScript → Python", category: "code-converters", description: "Transpile client-side JavaScript into pure Python syntax.", isAiPowered: true },
+      { id: "java-to-py", name: "Java → Python", category: "code-converters", description: "Translate object-oriented Java classes to functional Python scripts.", isAiPowered: true },
+      { id: "py-to-java", name: "Python → Java", category: "code-converters", description: "Convert dynamically typed Python to strictly typed classes in Java.", isAiPowered: true },
+      { id: "ts-to-js", name: "TypeScript → JavaScript", category: "code-converters", description: "Strip TypeScript type declarations and interfaces down to clean ES6 JavaScript.", isAiPowered: true },
+      { id: "go-to-py", name: "Go → Python", category: "code-converters", description: "Translate fast compiled Go constructs into legible Python routines.", isAiPowered: true },
+      { id: "cpp-to-py", name: "C++ → Python", category: "code-converters", description: "Convert low-level system C++ code to high-level Python script blocks.", isAiPowered: true },
+      { id: "php-to-js", name: "PHP → JavaScript", category: "code-converters", description: "Migrate server-side legacy PHP scripts into modern Node JS or Client JS.", isAiPowered: true },
+      { id: "cplusplus-java", name: "C++ → Java", category: "code-converters", description: "Translate C++ memory references and classes into JVM Java code.", isAiPowered: true },
+      { id: "java-to-csharp", name: "Java → C#", category: "code-converters", description: "Cross-compile Java namespaces and types into Microsoft C# RestClient/Logic.", isAiPowered: true }
+    ]
+  },
+  {
+    id: "code-generators",
+    title: "Code Generator for Testing",
+    icon: "FileCode2",
+    tools: [
+      { id: "jest-gen", name: "Jest Test Suite Generator", category: "code-generators", description: "Generate comprehensive Jest unit test file blocks with mock structures.", isAiPowered: true },
+      { id: "pytest-gen", name: "PyTest Assert Generator", category: "code-generators", description: "Generate Python PyTest boilerplate testing script functions.", isAiPowered: true },
+      { id: "dockerfile-gen", name: "Dockerfile & Compose Builder", category: "code-generators", description: "Generate highly optimized Dockerfile scripts and docker-compose settings.", isAiPowered: true },
+      { id: "github-actions-gen", name: "GitHub Actions CI/CD Pipeline", category: "code-generators", description: "Generate GitHub workflow YAML config files for automated testing/deployments.", isAiPowered: true },
+      { id: "readme-gen", name: "Markdown README.md Guide", category: "code-generators", description: "Generate standard exhaustive technical documentation skeletons for repositories.", isAiPowered: true },
+      { id: "html5-boilerplate", name: "HTML5 Boilerplate & SEO Template", category: "code-generators", description: "Generate clean modern semantic HTML grids with viewport metadata templates.", isAiPowered: true },
+      { id: "json-mock-gen", name: "JSON Mock Data Synthesizer", category: "code-generators", description: "Generate voluminous and realistic dummy JSON records representing users or catalogs.", isAiPowered: true }
+    ]
   }
 ];
+
+const LOGICAL_ORDER = [
+  "contact-management",
+  "whatsapp-suite",
+  "mobile-utilities",
+  "media-optimization",
+  "receipt-ocr",
+  "files-documents",
+  "everyday-calculators",
+  "finance-money",
+  "ai-utilities",
+  "developer-hub",
+  "api-integration",
+  "code-converters",
+  "code-generators",
+  "data-transformation",
+  "database-schema",
+  "enterprise-modernization"
+];
+
+// Sort categories in place with a secure logical hierarchy mapping
+CATEGORIES.sort((a, b) => {
+  const indexA = LOGICAL_ORDER.indexOf(a.id);
+  const indexB = LOGICAL_ORDER.indexOf(b.id);
+  return (indexA !== -1 ? indexA : 999) - (indexB !== -1 ? indexB : 999);
+});
 
 export const ALL_TOOLS: Tool[] = CATEGORIES.reduce((acc, cat) => {
   return [...acc, ...cat.tools];
